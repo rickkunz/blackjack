@@ -16,7 +16,7 @@ import java.io.IOException;
 /**
  * @author Rick Kunz
  */
-public class Blackjack extends JFrame implements ActionListener {
+public class Blackjack extends JFrame implements ActionListener, BlackjackConstants {
 
     //Interactable buttons
     JButton start = new JButton("Start");
@@ -31,11 +31,11 @@ public class Blackjack extends JFrame implements ActionListener {
     List<Card> dealerHand = new ArrayList<>();
 
     //Declare variables
-    int playerScore;
-    int dealerScore;
-    int playerMoney = 500;
-    int playerAces;
-    int dealerAces;
+    private int playerScore;
+    private int dealerScore;
+    private int playerMoney = PLAYERSTARTINGMONEY;
+    private int playerAces;
+    private int dealerAces;
 
     //Initialize deck
     Deck deck = new Deck();
@@ -45,7 +45,7 @@ public class Blackjack extends JFrame implements ActionListener {
     JPanel buttonPane = new JPanel();
     JPanel statusPane = new JPanel();
     JLabel status = new JLabel("Can you walk away with $1,000? Press start to begin!");
-    JLabel playerLabel = new JLabel("Player");
+    JLabel playerLabel = new JLabel(PLAYER);
     JPanel playerName = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
     //Set variables for playing cards
@@ -59,10 +59,10 @@ public class Blackjack extends JFrame implements ActionListener {
 
     //Declare variables for right section
     JPanel scorePane = new JPanel(new GridLayout(3, 1));
-    JLabel dealerLabel = new JLabel("Dealer");
-    JLabel playerMoneyTracker = new JLabel("Player's Money: $" + playerMoney);
-    JLabel playerScoreTracker = new JLabel("Player Score: 0");
-    JLabel dealerScoreTracker = new JLabel("Dealer Score: 0");
+    JLabel dealerLabel = new JLabel(DEALER);
+    JLabel playerMoneyTracker = new JLabel(PLAYER + "'s Money: $" + playerMoney);
+    JLabel playerScoreTracker = new JLabel(PLAYER + " Score: 0");
+    JLabel dealerScoreTracker = new JLabel(DEALER + " Score: 0");
 
     //Declare variable for center section upon cashing out
     JPanel victoryPane = new JPanel();
@@ -114,14 +114,14 @@ public class Blackjack extends JFrame implements ActionListener {
         add(scorePane, BorderLayout.LINE_END);
 
         //set Fonts
-        playerLabel.setFont(new Font("sansserif", Font.BOLD, 42));
-        dealerLabel.setFont(new Font("sansserif", Font.BOLD, 42));
-        status.setFont(new Font("sansserif", Font.PLAIN, 20));
+        playerLabel.setFont(new Font("sansserif", Font.BOLD, LARGEFONT));
+        dealerLabel.setFont(new Font("sansserif", Font.BOLD, LARGEFONT));
+        status.setFont(new Font("sansserif", Font.PLAIN, SMALLFONT));
         for (Component c : buttonPane.getComponents()) {
-            c.setFont(new Font("sansserif", Font.BOLD, 32));
+            c.setFont(new Font("sansserif", Font.BOLD, MEDIUMFONT));
         }
         for (Component c : scorePane.getComponents()) {
-            c.setFont(new Font("sansserif", Font.PLAIN, 20));
+            c.setFont(new Font("sansserif", Font.PLAIN, SMALLFONT));
         }
 
         //Set the initial buttons seen
@@ -161,8 +161,8 @@ public class Blackjack extends JFrame implements ActionListener {
         }
 
         if (source == newGame) {
-            playerMoney = 500;
-            playerMoneyTracker.setText("Player's Money: $" + playerMoney);
+            playerMoney = PLAYERSTARTINGMONEY;
+            playerMoneyTracker.setText(PLAYER + "'s Money: $" + playerMoney);
             newGame.setVisible(false);
             newRound();
         }
@@ -171,15 +171,7 @@ public class Blackjack extends JFrame implements ActionListener {
             cashOut();
         }
 
-        if (playerMoney >= 1000 & playAgain.isVisible() == true) {
-            cashOut.setVisible(true);
-        } else if (playerMoney < 100) {
-            status.setText("Tough luck. Press \"New Game\" to try again.");
-            newGame.setVisible(true);
-            playAgain.setVisible(false);
-        }
-        revalidate();
-        repaint();
+        updateStatus();
     }
 
     private static void setLookAndFeel() {
@@ -191,97 +183,52 @@ public class Blackjack extends JFrame implements ActionListener {
         }
     }
 
-    void hit() {
+    private void hit() {
         playerHand.add(deck.drawCard());
-        playerScore += playerHand.get((playerHand.size()) - 1).value;
+        playerScore += playerHand.get((playerHand.size()) - 1).getValue();
 
-        if (playerHand.get(playerHand.size() - 1).value == 11) {
+        if (playerHand.get(playerHand.size() - 1).getValue() == DEFAULTACEVALUE) {
             playerAces++;
         }
 
-        displayCard(playerHand.get((playerHand.size()) - 1).cardName, "player");
-        if (playerScore > 21) {
+        displayCard(playerHand.get((playerHand.size()) - 1).getCardName(), PLAYER);
+        if (playerScore > TARGETSCORE) {
             if (playerAces > 0) {
-                playerScore -= 10;
+                playerScore -= ACEDECREMENT;
                 playerAces--;
             } else {
                 hit.setVisible(false);
                 stay.setVisible(false);
 
                 status.setText("You bust with a score of " + playerScore + ". Better luck next time!");
-                playerMoney -= 100;
+                playerMoney -= BETAMOUNT;
 
-                Formatter moneyFormatted = new Formatter();
-                moneyFormatted.format("%,d", playerMoney);
-                playerMoneyTracker.setText("Player's Money: $" + moneyFormatted);
-
-                System.out.println("");
+                formatMoneyTracker();
 
                 playAgain.setVisible(true);
             }
         }
 
-        playerScoreTracker.setText("Player Score: " + playerScore);
+        playerScoreTracker.setText(PLAYER + " Score: " + playerScore);
 
-        if (playerHand.size() == 5 & playerScore <= 21) {
+        if (playerHand.size() == FIVECARDCHARLIE & playerScore <= TARGETSCORE) {
             status.setText("Five Card Charlie! You win!");
-            playerMoney += 100;
+            playerMoney += BETAMOUNT;
 
-            Formatter moneyFormatted = new Formatter();
-            moneyFormatted.format("%,d", playerMoney);
-            playerMoneyTracker.setText("Player's Money: $" + moneyFormatted);
+            formatMoneyTracker();
 
             hit.setVisible(false);
             stay.setVisible(false);
             playAgain.setVisible(true);
-        } else if (playerScore == 21) {
+        } else if (playerScore == TARGETSCORE) {
             stay();
         }
     }
 
-    void stay() {
-        dealerArea.removeAll();
-
-        while (dealerScore < 17 || (dealerScore > 21 && dealerAces > 0)) {
-            dealerHand.add(deck.drawCard());
-
-            if (dealerHand.get(dealerHand.size() - 1).value == 11) {
-                dealerAces++;
-            }
-
-            if (dealerScore > 21 && dealerAces > 0) {
-                dealerScore -= 10;
-                dealerAces--;
-            }
-
-            dealerScore += dealerHand.get((dealerHand.size()) - 1).value;
-        }
-
-        for (Card dH : dealerHand) {
-            displayCard(dH.cardName, "dealer");
-        }
-
-        dealerScoreTracker.setText("Dealer Score: " + dealerScore);
-
-        if (dealerScore > 21 | playerScore > dealerScore) {
-            playerMoney += 100;
-        } else if (playerScore < dealerScore) {
-            playerMoney -= 100;
-        }
-
-        Formatter moneyFormatted = new Formatter();
-        moneyFormatted.format("%,d", playerMoney);
-        playerMoneyTracker.setText("Player's Money: $" + moneyFormatted);
-
-        if (dealerScore > 21) {
-            status.setText("Dealer busts with a score of " + dealerScore + ". You win!");
-        } else if (playerScore > dealerScore) {
-            status.setText("You win, " + playerScore + " to " + dealerScore + "!");
-        } else if (playerScore < dealerScore) {
-            status.setText("You lose this round, " + playerScore + " to " + dealerScore + ". Better luck next time.");
-        } else {
-            status.setText("It's a push, " + playerScore + " to " + dealerScore + ".");
-        }
+    private void stay() {
+        dealerDraws();
+        
+        compareScores();
 
         hit.setVisible(false);
         stay.setVisible(false);
@@ -291,7 +238,7 @@ public class Blackjack extends JFrame implements ActionListener {
         }
     }
 
-    void newRound() {
+    private void newRound() {
         playerScore = 0;
         dealerScore = 0;
         playerAces = 0;
@@ -311,12 +258,12 @@ public class Blackjack extends JFrame implements ActionListener {
         dealerHand.add(deck.drawCard());
 
         for (Card pH : playerHand) {
-            playerScore += pH.value;
-            if (pH.value == 11) {
+            playerScore += pH.getValue();
+            if (pH.getValue() == DEFAULTACEVALUE) {
                 playerAces++;
             }
 
-            displayCard(pH.cardName, "player");
+            displayCard(pH.getCardName(), PLAYER);
 
             if (playerAces == 2) {
                 playerScore = 12;
@@ -325,31 +272,29 @@ public class Blackjack extends JFrame implements ActionListener {
         }
 
         for (Card dH : dealerHand) {
-            dealerScore += dH.value;
-            if (dH.value == 11) {
+            dealerScore += dH.getValue();
+            if (dH.getValue() == DEFAULTACEVALUE) {
                 dealerAces++;
             }
         }
 
-        displayCard(dealerHand.get(0).cardName, "dealer");
+        displayCard(dealerHand.get(0).getCardName(), DEALER);
         displayBack();
 
-        playerScoreTracker.setText("Player Score: " + playerScore);
-        dealerScoreTracker.setText("Dealer Score: Between " + (dealerHand.get(0).value + 1)
-                + " and " + (dealerHand.get(0).value + 11) + " ");
+        playerScoreTracker.setText(PLAYER + " Score: " + playerScore);
+        dealerScoreTracker.setText(DEALER + " Score: Between " + (dealerHand.get(0).getValue() + 1)
+                + " and " + (dealerHand.get(0).getValue() + DEFAULTACEVALUE) + " ");
 
-        if (playerScore == 21 & dealerScore != 21) {
+        if (playerScore == TARGETSCORE & dealerScore != TARGETSCORE) {
             status.setText("Blackjack! You win $150.");
-            playerMoney += 150;
+            playerMoney += BLACKJACKAMOUNT;
 
-            Formatter moneyFormatted = new Formatter();
-            moneyFormatted.format("%,d", playerMoney);
-            playerMoneyTracker.setText("Player's Money: $" + moneyFormatted);
+            formatMoneyTracker();
 
             hit.setVisible(false);
             stay.setVisible(false);
             playAgain.setVisible(true);
-        } else if (playerScore == 21) {
+        } else if (playerScore == TARGETSCORE) {
             stay();
         } else {
             hit.setVisible(true);
@@ -357,7 +302,7 @@ public class Blackjack extends JFrame implements ActionListener {
         }
     }
 
-    void cashOut() {
+    private void cashOut() {
         Formatter moneyFormatted = new Formatter();
         moneyFormatted.format("%,d", playerMoney);
         status.setText("Congratulations! You walked away with $" + moneyFormatted + ".");
@@ -378,10 +323,9 @@ public class Blackjack extends JFrame implements ActionListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
-    void displayBack() {
+    private void displayBack() {
         try {
             BufferedImage newCard = ImageIO.read(new File("src/images/CardBack.png"));
             JLabel picLabel = new JLabel(new ImageIcon(newCard));
@@ -391,15 +335,15 @@ public class Blackjack extends JFrame implements ActionListener {
         }
     }
 
-    void displayCard(String cardName, String cardLocation) {
+    private void displayCard(String cardName, String cardLocation) {
         try {
             String nameOfFile = "src/images/" + cardName + ".png";
             BufferedImage newCard = ImageIO.read(new File(nameOfFile));
             JLabel picLabel = new JLabel(new ImageIcon(newCard));
 
-            if (cardLocation.equals("player")) {
+            if (cardLocation.equals(PLAYER)) {
                 playerArea.add(picLabel);
-            } else if (cardLocation.equals("dealer")) {
+            } else if (cardLocation.equals(DEALER)) {
                 dealerArea.add(picLabel);
             }
         } catch (IOException e) {
@@ -407,6 +351,66 @@ public class Blackjack extends JFrame implements ActionListener {
         }
     }
 
+    private void updateStatus() {
+        if (playerMoney >= CASHOUTTHRESHOLD & playAgain.isVisible() == true) {
+            cashOut.setVisible(true);
+        } else if (playerMoney < NEWGAMETHRESHOLD) {
+            status.setText("Tough luck. Press \"New Game\" to try again.");
+            newGame.setVisible(true);
+            playAgain.setVisible(false);
+        }
+        revalidate();
+        repaint();
+    }
+
+    private void formatMoneyTracker() {
+        Formatter moneyFormatted = new Formatter();
+        moneyFormatted.format("%,d", playerMoney);
+        playerMoneyTracker.setText(PLAYER + "'s Money: $" + moneyFormatted);
+    }
+
+    private void dealerDraws() {
+        dealerArea.removeAll();
+        
+        while (dealerScore < DEALERMINSTOP || (dealerScore > TARGETSCORE && dealerAces > 0)) {
+            dealerHand.add(deck.drawCard());
+
+            if (dealerHand.get(dealerHand.size() - 1).getValue() == DEFAULTACEVALUE) {
+                dealerAces++;
+            }
+
+            if (dealerScore > TARGETSCORE && dealerAces > 0) {
+                dealerScore -= ACEDECREMENT;
+                dealerAces--;
+            }
+
+            dealerScore += dealerHand.get((dealerHand.size()) - 1).getValue();
+        }
+        
+        dealerScoreTracker.setText(DEALER + " Score: " + dealerScore);
+        
+        for (Card dH : dealerHand) {
+            displayCard(dH.getCardName(), DEALER);
+        }
+    }
+    
+    private void compareScores() {
+        if (dealerScore > TARGETSCORE) {
+            status.setText(DEALER + " busts with a score of " + dealerScore + ". You win!");
+            playerMoney += BETAMOUNT;
+        } else if (playerScore > dealerScore) {
+            status.setText("You win, " + playerScore + " to " + dealerScore + "!");
+            playerMoney += BETAMOUNT;
+        } else if (playerScore < dealerScore) {
+            status.setText("You lose this round, " + playerScore + " to " + dealerScore + ". Better luck next time.");
+            playerMoney -= BETAMOUNT;
+        } else {
+            status.setText("It's a push, " + playerScore + " to " + dealerScore + ".");
+        }
+        
+        formatMoneyTracker();
+    }
+    
     public static void main(String[] args) {
         setLookAndFeel();
         Blackjack bj = new Blackjack();

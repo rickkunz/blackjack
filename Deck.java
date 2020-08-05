@@ -13,13 +13,13 @@ import java.util.*;
  */
 public class Deck implements BlackjackConstants {
 
-    private String[] suits;
-    private List<Card> currentDeck = new ArrayList<>();
+    private static String[] suits = new String[]{SUIT_HEARTS, SUIT_DIAMONDS, SUIT_SPADES, SUIT_CLUBS};
+    private List<Card> currentDeck;
     private int currentCard = 0;
     private Iterator<Card> iterator;
 
     public Deck() {
-        suits = new String[]{SUIT_HEARTS, SUIT_DIAMONDS, SUIT_SPADES, SUIT_CLUBS};
+        currentDeck = new ArrayList<>();
         initialize();
         shuffle();
     }

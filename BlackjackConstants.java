@@ -10,7 +10,6 @@ package blackjack;
  * @author quiet
  */
 public interface BlackjackConstants {
-
     String SUIT_HEARTS = "Hearts";
     String SUIT_DIAMONDS = "Diamonds";
     String SUIT_SPADES = "Spades";

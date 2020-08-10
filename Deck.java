@@ -1,14 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package blackjack;
 
 import java.util.*;
 
 /**
- *
+ * This class creates a deck of 52 playing cards and includes methods to shuffle the deck and draw the next card.
+ * 
  * @author Rick Kunz
  */
 public class Deck implements BlackjackConstants {
@@ -34,6 +30,10 @@ public class Deck implements BlackjackConstants {
         }
     }
 
+    /**
+     * Draw the next card in the deck
+     * @return the next card in the deck or an ArrayIndexOutOfBoundsException if there are no more cards remaining.
+     */
     public Card drawCard() {
         if (iterator == null) {
             iterator = currentDeck.iterator();

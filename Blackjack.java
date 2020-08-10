@@ -14,6 +14,8 @@ import java.io.File;
 import java.io.IOException;
 
 /**
+ * This deck creates the playing area and game logic for the blackjack game.
+ * 
  * @author Rick Kunz
  */
 public class Blackjack extends JFrame implements ActionListener, BlackjackConstants {

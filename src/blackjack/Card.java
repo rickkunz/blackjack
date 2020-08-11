@@ -7,7 +7,6 @@ import java.util.*;
  * 
  * @author Rick Kunz
  */
-
 public class Card {
 
     private int value;

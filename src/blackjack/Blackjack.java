@@ -18,7 +18,6 @@ import java.io.IOException;
  * 
  * @author Rick Kunz
  */
-
 public class Blackjack extends JFrame implements ActionListener, BlackjackConstants {
 
     //Interactable buttons

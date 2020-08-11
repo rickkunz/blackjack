@@ -7,6 +7,7 @@ import java.util.*;
  * 
  * @author Rick Kunz
  */
+
 public class Deck implements BlackjackConstants {
 
     private static String[] suits = new String[]{SUIT_HEARTS, SUIT_DIAMONDS, SUIT_SPADES, SUIT_CLUBS};
